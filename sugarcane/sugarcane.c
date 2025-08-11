@@ -72,16 +72,11 @@ int harveField(int pos) {
     return total;
 }
 
-int main(){
+int run(int length, int clock, int hours) {
     srand(777);
 
     int tick = 0;
-
-    int clock = 20000;
-    int length = 20;
-
     int collected = 0;
-
     
     allocateField(length);
     initField(length);
@@ -89,7 +84,7 @@ int main(){
     allocateFlyingMachine();
     initFlyingMachine();
 
-    while (tick != (TPS*3600*100)) {
+    while (tick != (TPS*3600*hours)) {
         tick++;
 
         simulateRandomTicks(length);
@@ -104,7 +99,12 @@ int main(){
                 flying_machine->mtick = 0;
                 flying_machine->pos++;
 
-                collected += harveField(flying_machine->pos);
+                if(flying_machine->pos < length) {
+                    collected += harveField(flying_machine->pos);
+                } else {
+                    flying_machine->active = false;
+                    flying_machine->pos = -1;
+                }
             }
         }
 
@@ -115,7 +115,21 @@ int main(){
         }
     }
 
-    printf("sugarcane: %d\n", collected);
+    freeField();
+    freeFlyingMachine();
 
+    return collected / hours;
+}
+
+int main(int argc, char *argv[]) {
+    if (argc != 4) return 1;
+    
+    int length = atoi(argv[1]);
+    int clock = atoi(argv[2]);
+    int hours = atoi(argv[3]);
+    
+    int result = run(length, clock, hours);
+    printf("%d", result);
+    
     return 0;
 }
